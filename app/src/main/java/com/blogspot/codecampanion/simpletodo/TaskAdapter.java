@@ -15,6 +15,11 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
 
     private List<Task> taskList = new ArrayList<>();
 
+    public void setTaskList(List<Task> taskList) {
+        this.taskList = taskList;
+        notifyDataSetChanged();
+    }
+
     class TaskViewHolder extends RecyclerView.ViewHolder{
 
         private TextView task;
