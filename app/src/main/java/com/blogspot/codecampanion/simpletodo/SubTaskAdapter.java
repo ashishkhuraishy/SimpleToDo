@@ -15,8 +15,15 @@ public class SubTaskAdapter extends RecyclerView.Adapter<SubTaskAdapter.SubTaskV
 
     private List<SubTask> subTaskList = new ArrayList<>();
 
+    public void setListener(SetOnItemClickListener listener) {
+        this.listener = listener;
+    }
+
+    private SetOnItemClickListener listener;
+
     public void setSubTaskList(List<SubTask> subTaskList) {
         this.subTaskList = subTaskList;
+        notifyDataSetChanged();
     }
 
     public class SubTaskViewHolder extends RecyclerView.ViewHolder {
@@ -25,7 +32,18 @@ public class SubTaskAdapter extends RecyclerView.Adapter<SubTaskAdapter.SubTaskV
         public SubTaskViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            subTaskList = itemView.findViewById(R.id.textViewsubTask);
+            subTasktext = itemView.findViewById(R.id.textViewsubTask);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int position = getAdapterPosition();
+                    if(listener != null & position != RecyclerView.NO_POSITION){
+                        listener.OnItemClick(subTaskList.get(position));
+                    }
+
+                }
+            });
         }
     }
 
@@ -51,4 +69,11 @@ public class SubTaskAdapter extends RecyclerView.Adapter<SubTaskAdapter.SubTaskV
     }
 
 
+    public interface SetOnItemClickListener{
+        void OnItemClick(SubTask subTask);
+    }
+
+    SubTask getSubTask(int position){
+        return subTaskList.get(position);
+    }
 }

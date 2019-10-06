@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -18,7 +19,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements BottomSheetTask.BottomSheetTaskListner {
 
     private int ADD_TASK_REQUEST_CODE = 1;
     private int EDIT_REQUEST_CODE = 2;
@@ -43,8 +44,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 //OnClick
-                Intent intent = new Intent(MainActivity.this, CreateTaskActivity.class);
-                startActivity(intent);
+                BottomSheetTask bottomSheetTask = new BottomSheetTask();
+                bottomSheetTask.show(getSupportFragmentManager(), "bottom Sheet task");
             }
         });
 
@@ -103,6 +104,15 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Toast.makeText(this, "Oops Something Went wrong!", Toast.LENGTH_SHORT).show();
             super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    @Override
+    public void onAddClicked(String string) {
+        if(string != null) {
+            Log.w("TAG", "onAddClicked: " + string);
+            Task task = new Task(string);
+            toDoViewModel.insert(task);
         }
     }
 }

@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -30,12 +31,9 @@ public class CreateTaskActivity extends AppCompatActivity implements BottomSheet
     public static final String EXTRA_TASK = "com.blogspot.codecampanion.simpletodo.EXTRA_TASK";
 
     private TextInputEditText task;
-    private TextView tempText;
 
     private ToDoViewModel viewModel;
-    private int taskId  = -1;
-
-    private SubTaskAdapter adapter;
+    private int taskId = -1;
 
 
     @Override
@@ -48,6 +46,7 @@ public class CreateTaskActivity extends AppCompatActivity implements BottomSheet
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setHasFixedSize(true);
 
+        final SubTaskAdapter adapter = new SubTaskAdapter();
         recyclerView.setAdapter(adapter);
 
         Button addSubTaskBtn = findViewById(R.id.addSubTaskBTN);
@@ -63,45 +62,51 @@ public class CreateTaskActivity extends AppCompatActivity implements BottomSheet
 
 
         Intent intent = getIntent();
-        if(intent.hasExtra(EXTRA_ID)){
+        if (intent.hasExtra(EXTRA_ID)) {
             setTitle("Edit Task");
             taskId = intent.getIntExtra(EXTRA_ID, -1);
             task.setText(intent.getStringExtra(EXTRA_TASK));
-        }else {
+        } else {
             setTitle("Add Task");
-            task.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-                @Override
-                public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
-                    if(i == EditorInfo.IME_ACTION_DONE){
-                        AddTask();
-                        return true;
-                    }
-
-                    return false;
-                }
-            });
         }
 
         viewModel = ViewModelProviders.of(this).get(ToDoViewModel.class);
-        if(taskId != -1) {
-            viewModel.getAllSubTasks(taskId).observe(this, new Observer<List<SubTask>>() {
-                @Override
-                public void onChanged(List<SubTask> subTasks) {
-                    //recyclerView
-                    adapter.setSubTaskList(subTasks);
-                }
-            });
-        }
+        viewModel.getAllSubTasks(taskId).observe(this, new Observer<List<SubTask>>() {
+            @Override
+            public void onChanged(List<SubTask> subTasks) {
+                //recyclerView
+                adapter.setSubTaskList(subTasks);
+            }
+        });
+
+        adapter.setListener(new SubTaskAdapter.SetOnItemClickListener() {
+            @Override
+            public void OnItemClick(SubTask subTask) {
+                BottomSheetSubTask bottomSheetSubTask = new BottomSheetSubTask();
+                Bundle bundle = new Bundle();
+                bundle.putString("SUB_TASK", subTask.getSubTask());
+                bundle.putInt("SUB_ID", subTask.getId());
+                bottomSheetSubTask.setArguments(bundle);
+                bottomSheetSubTask.show(getSupportFragmentManager(), "Sub Task BottomSheet");
+            }
+        });
+
+        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,
+                ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                    viewModel.deleteSubTask(adapter.getSubTask(viewHolder.getAdapterPosition()));
+                Toast.makeText(CreateTaskActivity.this, "Success", Toast.LENGTH_SHORT).show();
+            }
+        }).attachToRecyclerView(recyclerView);
 
     }
 
-    private void AddTask() {
-        String task = this.task.getText().toString();
-        Task addTask = new Task(task);
-        taskId = addTask.getId();
-        viewModel.insert(addTask);
-
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -128,12 +133,12 @@ public class CreateTaskActivity extends AppCompatActivity implements BottomSheet
 
         Intent data = new Intent();
         String task = this.task.getText().toString();
-        if(task.trim().isEmpty()){
+        if (task.trim().isEmpty()) {
             Toast.makeText(this, "Enter A task", Toast.LENGTH_SHORT).show();
             return;
         }
         int id = getIntent().getIntExtra(EXTRA_ID, -1);
-        if(id != -1){
+        if (id != -1) {
             data.putExtra(EXTRA_ID, id);
             data.putExtra(EXTRA_TASK, task);
             setResult(RESULT_OK, data);
@@ -144,7 +149,13 @@ public class CreateTaskActivity extends AppCompatActivity implements BottomSheet
     }
 
     @Override
-    public void onSaveClicked(String string) {
-        viewModel.insertSubTask(new SubTask(string, taskId));
+    public void onSaveClicked(String string, int subTaskID) {
+        if (subTaskID != -1) {
+            SubTask subTask = new SubTask(string, taskId);
+            subTask.setId(subTaskID);
+            viewModel.updateSubTask(subTask);
+        } else {
+            viewModel.insertSubTask(new SubTask(string, taskId));
+        }
     }
 }
