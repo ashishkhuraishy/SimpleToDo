@@ -10,23 +10,21 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.ArrayList;
-import java.util.List;
 
 public class TaskAdapter extends ListAdapter<Task, TaskAdapter.TaskViewHolder> {
 
     private OnItemClickListener listener;
 
-    public void setListener(OnItemClickListener listener) {
+    void setListener(OnItemClickListener listener) {
         this.listener = listener;
     }
 
 
-    public TaskAdapter(){
+    TaskAdapter(){
         super(DIFF_CALLBACK);
     }
 
-    public static final DiffUtil.ItemCallback<Task> DIFF_CALLBACK = new DiffUtil.ItemCallback<Task>() {
+    private static final DiffUtil.ItemCallback<Task> DIFF_CALLBACK = new DiffUtil.ItemCallback<Task>() {
         @Override
         public boolean areItemsTheSame(@NonNull Task oldItem, @NonNull Task newItem) {
             return oldItem.getId() == newItem.getId();
@@ -52,7 +50,7 @@ public class TaskAdapter extends ListAdapter<Task, TaskAdapter.TaskViewHolder> {
                 public void onClick(View view) {
                     int position = getAdapterPosition();
                     if(listener != null && RecyclerView.NO_POSITION != position){
-                        listener.OnItemClick(getTask(position));
+                        listener.OnItemClick(getItem(position));
                     }
                 }
             });
@@ -61,8 +59,8 @@ public class TaskAdapter extends ListAdapter<Task, TaskAdapter.TaskViewHolder> {
     }
 
     /*Getting Item To be Deleted while Swiping*/
-    public Task getTask(int position){
-        return getTask(position);
+    Task getTask(int position){
+        return getItem(position);
     }
 
 
@@ -78,7 +76,7 @@ public class TaskAdapter extends ListAdapter<Task, TaskAdapter.TaskViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull TaskViewHolder holder, int position) {
-        Task currentItem = getTask(position);
+        Task currentItem = getItem(position);
 
         holder.task.setText(currentItem.getTask());
 
