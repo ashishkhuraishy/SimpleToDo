@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 //OnClick
                 Intent intent = new Intent(MainActivity.this, CreateTaskActivity.class);
-                startActivityForResult(intent, ADD_TASK_REQUEST_CODE);
+                startActivity(intent);
             }
         });
 
@@ -89,11 +89,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 
-        if (requestCode == ADD_TASK_REQUEST_CODE && resultCode == RESULT_OK) {
-            Task task = new Task(data.getStringExtra(CreateTaskActivity.EXTRA_TASK));
-            toDoViewModel.insert(task);
-
-        }else  if (requestCode == EDIT_REQUEST_CODE && resultCode == RESULT_OK){
+        if (requestCode == EDIT_REQUEST_CODE && resultCode == RESULT_OK){
             Task task = new Task(data.getStringExtra(CreateTaskActivity.EXTRA_TASK));
             int id = data.getIntExtra(CreateTaskActivity.EXTRA_ID, -1);
             if(id != -1) {

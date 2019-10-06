@@ -10,32 +10,55 @@ import java.util.List;
 public class TaskRepository {
 
     private TaskDao taskDao;
+    private SubTaskDao subTaskDao;
     private LiveData<List<Task>> taskList;
 
-    public TaskRepository(Application application){
+
+    private LiveData<List<SubTask>> subTaskList;
+
+    TaskRepository(Application application){
         TaskDatabase taskDatabase = TaskDatabase.getInstance(application);
         taskDao = taskDatabase.taskDao();
-        taskList = taskDao.getAll();
+        subTaskDao = taskDatabase.subTaskDao();
     }
 
-    public void insert(Task task){
+    void insert(Task task){
         new InsertAsyncTask(taskDao).execute(task);
     }
 
-    public void update(Task task){
+    void update(Task task){
         new UpdateAsyncTask(taskDao).execute(task);
     }
 
-    public void delete(Task task){
+    void delete(Task task){
         new DeleteAsyncTask(taskDao).execute(task);
     }
 
-    public void deleteAll(){
+    void deleteAll(){
         new DeleteAllAsyncTask(taskDao).execute();
     }
 
-    public LiveData<List<Task>> getTaskList() {
+    LiveData<List<Task>> getTaskList() {
+
+        taskList = taskDao.getAll();
         return taskList;
+    }
+
+    public void insertSubTask(SubTask subTask){
+        new InsertSubTaskAsyncTask(subTaskDao).execute(subTask);
+    }
+
+    public void updateSubTask(SubTask subTask){
+        new UpdateSubTaskAsyncTask(subTaskDao).execute(subTask);
+    }
+
+    public void deleteSubTask(SubTask subTask){
+        new DeleteSubTaskAsyncTask(subTaskDao).execute(subTask);
+    }
+
+    public LiveData<List<SubTask>> getSubTaskList(int taskId) {
+        subTaskList =  subTaskDao.getSubTasks(taskId);
+        return subTaskList;
     }
 
 
@@ -98,6 +121,53 @@ public class TaskRepository {
             return null;
         }
     }
+
+    private static class InsertSubTaskAsyncTask extends AsyncTask<SubTask, Void, Void>{
+
+        private SubTaskDao subTaskDao;
+
+        InsertSubTaskAsyncTask(SubTaskDao subTaskDao) {
+            this.subTaskDao = subTaskDao;
+        }
+
+        @Override
+        protected Void doInBackground(SubTask... subTasks) {
+            subTaskDao.insert(subTasks[0]);
+            return null;
+        }
+    }
+
+    private static class UpdateSubTaskAsyncTask extends AsyncTask<SubTask, Void, Void>{
+
+        private SubTaskDao subTaskDao;
+
+        UpdateSubTaskAsyncTask(SubTaskDao subTaskDao) {
+            this.subTaskDao = subTaskDao;
+        }
+
+        @Override
+        protected Void doInBackground(SubTask... subTasks) {
+            subTaskDao.update(subTasks[0]);
+            return null;
+        }
+    }
+
+    private static class DeleteSubTaskAsyncTask extends AsyncTask<SubTask, Void, Void>{
+
+        private SubTaskDao subTaskDao;
+
+        DeleteSubTaskAsyncTask(SubTaskDao subTaskDao) {
+            this.subTaskDao = subTaskDao;
+        }
+
+        @Override
+        protected Void doInBackground(SubTask... subTasks) {
+            subTaskDao.delete(subTasks[0]);
+            return null;
+        }
+    }
+
+
 
 
 }
