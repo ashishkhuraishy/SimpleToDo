@@ -6,19 +6,37 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder> {
+public class TaskAdapter extends ListAdapter<Task, TaskAdapter.TaskViewHolder> {
 
-    private List<Task> taskList = new ArrayList<>();
+    private OnItemClickListener listener;
 
-    public void setTaskList(List<Task> taskList) {
-        this.taskList = taskList;
-        notifyDataSetChanged();
+    public void setListener(OnItemClickListener listener) {
+        this.listener = listener;
     }
+
+
+    public TaskAdapter(){
+        super(DIFF_CALLBACK);
+    }
+
+    public static final DiffUtil.ItemCallback<Task> DIFF_CALLBACK = new DiffUtil.ItemCallback<Task>() {
+        @Override
+        public boolean areItemsTheSame(@NonNull Task oldItem, @NonNull Task newItem) {
+            return oldItem.getId() == newItem.getId();
+        }
+
+        @Override
+        public boolean areContentsTheSame(@NonNull Task oldItem, @NonNull Task newItem) {
+            return oldItem.getTask().equals(newItem.getTask());
+        }
+    };
 
     class TaskViewHolder extends RecyclerView.ViewHolder{
 
@@ -28,7 +46,23 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
             super(itemView);
 
             task = itemView.findViewById(R.id.textViewTask);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int position = getAdapterPosition();
+                    if(listener != null && RecyclerView.NO_POSITION != position){
+                        listener.OnItemClick(getTask(position));
+                    }
+                }
+            });
+
         }
+    }
+
+    /*Getting Item To be Deleted while Swiping*/
+    public Task getTask(int position){
+        return getTask(position);
     }
 
 
@@ -44,15 +78,14 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull TaskViewHolder holder, int position) {
-        Task currentItem = taskList.get(position);
+        Task currentItem = getTask(position);
 
         holder.task.setText(currentItem.getTask());
 
     }
 
-    @Override
-    public int getItemCount() {
-        return taskList.size();
+    public interface OnItemClickListener{
+        void OnItemClick(Task task);
     }
 
 

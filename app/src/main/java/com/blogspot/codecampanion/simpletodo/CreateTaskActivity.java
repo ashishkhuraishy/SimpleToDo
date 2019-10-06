@@ -16,6 +16,7 @@ import java.util.Objects;
 
 public class CreateTaskActivity extends AppCompatActivity {
 
+    public static final String EXTRA_ID = "com.blogspot.codecampanion.simpletodo.EXTRA_ID";
     public static final String EXTRA_TASK = "com.blogspot.codecampanion.simpletodo.EXTRA_TASK";
 
     private TextInputEditText task;
@@ -25,10 +26,18 @@ public class CreateTaskActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_task);
 
-        Objects.requireNonNull(getSupportActionBar()).setHomeAsUpIndicator(R.drawable.ic_close_black_24dp);
-        setTitle("Add Text");
-
         task = findViewById(R.id.editTextTask);
+
+        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_close_black_24dp);
+
+
+        Intent intent = getIntent();
+        if(intent.hasExtra(EXTRA_ID)){
+            setTitle("Edit Task");
+            task.setText(intent.getStringExtra(EXTRA_TASK));
+        }else {
+            setTitle("Add Task");
+        }
 
     }
 
@@ -61,8 +70,12 @@ public class CreateTaskActivity extends AppCompatActivity {
             Toast.makeText(this, "Enter A task", Toast.LENGTH_SHORT).show();
             return;
         }
+        int id = getIntent().getIntExtra(EXTRA_ID, -1);
+        if(id != -1){
+            data.putExtra(EXTRA_ID, id);
+        }
         data.putExtra(EXTRA_TASK, task);
-        startActivityForResult(data, RESULT_OK);
+        setResult(RESULT_OK, data);
         finish();
 
     }
